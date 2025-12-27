@@ -1,4 +1,4 @@
-import { ROLE_PERMISSIONS } from "../utils/permissions.js";
+import { ROLE_PERMISSIONS } from "../constants/default-roles.js";
 
 export const requirePermission = (...perms) => {
   return (req, res, next) => {
@@ -6,7 +6,9 @@ export const requirePermission = (...perms) => {
     const userPerms = roles.flatMap((r) => ROLE_PERMISSIONS[r] || []);
     const ok = perms.every((p) => userPerms.includes(p));
     if (!ok) {
-      return res.status(403).json({ message: "Forbidden: permission required" });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: permission required" });
     }
     next();
   };

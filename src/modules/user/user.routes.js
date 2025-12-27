@@ -11,16 +11,11 @@ router.get("/me", authenticate, (req, res) => {
 });
 import { requireRole } from "../../middlewares/role.middleware.js";
 
-router.post(
-  "/admin/secret",
-  authenticate,
-  requireRole("admin"),
-  (req, res) => {
-    res.json({ message: "Admin access granted" });
-  }
-);
+router.post("/admin/secret", authenticate, requireRole("admin"), (req, res) => {
+  res.json({ message: "Admin access granted" });
+});
 import { requirePermission } from "../../middlewares/permissions.middleware.js";
-import { PERMISSIONS } from "../../utils/permissions.js";
+import { PERMISSIONS } from "../../constants/default-roles.js";
 
 router.delete(
   "/admin/users/:id",
@@ -30,6 +25,5 @@ router.delete(
     res.json({ message: "User deleted (example)" });
   }
 );
-
 
 export default router;

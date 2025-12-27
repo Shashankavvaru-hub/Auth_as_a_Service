@@ -1,15 +1,15 @@
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import { RefreshToken } from "./refreshToken.model.js";
-import {
-  generateRefreshToken,
-  hashRefreshToken,
-} from "./token.utils.js";
+import { generateRefreshToken, hashRefreshToken } from "./token.utils.js";
+import { resolveTokenTTLs } from "../../utils/token-ttl.util.js";
+import ms from "ms";
 
 /**
  * Create JWT access token
  */
 export const createAccessToken = ({ user, app }) => {
+  const { accessTokenTTL } = resolveTokenTTLs(app, env);
   return jwt.sign(
     {
       userId: user._id,
@@ -18,7 +18,7 @@ export const createAccessToken = ({ user, app }) => {
     },
     env.jwt.accessSecret,
     {
-      expiresIn: app.accessTokenTTL || env.jwt.accessTTL,
+      expiresIn: accessTokenTTL,
     }
   );
 };
@@ -29,11 +29,9 @@ export const createAccessToken = ({ user, app }) => {
 export const createRefreshToken = async ({ user, app }) => {
   const rawToken = generateRefreshToken();
   const tokenHash = hashRefreshToken(rawToken);
+  const { refreshTokenTTL } = resolveTokenTTLs(app, env);
 
-  const expiresAt = new Date(
-    Date.now() +
-      parseDuration(app.refreshTokenTTL || env.jwt.refreshTTL)
-  );
+  const expiresAt = new Date(Date.now() + ms(refreshTokenTTL));
 
   await RefreshToken.create({
     userId: user._id,
@@ -98,10 +96,7 @@ export const revokeRefreshToken = async ({ rawRefreshToken }) => {
 
   const tokenHash = hashRefreshToken(rawRefreshToken);
 
-  await RefreshToken.updateOne(
-    { tokenHash },
-    { isRevoked: true }
-  );
+  await RefreshToken.updateOne({ tokenHash }, { isRevoked: true });
 };
 
 /**

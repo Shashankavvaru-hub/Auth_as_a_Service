@@ -6,6 +6,7 @@ const clientAppSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      index: true,
     },
 
     appSecretHash: {
@@ -14,6 +15,25 @@ const clientAppSchema = new mongoose.Schema(
     },
 
     name: {
+      type: String,
+      required: true,
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true, // 🚨 one app per email (for now)
+      index: true,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationTokenHash: String,
+    emailVerificationTokenExpiresAt: Date,
+
+    frontendBaseUrl: {
       type: String,
       required: true,
     },

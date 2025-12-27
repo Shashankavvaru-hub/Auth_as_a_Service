@@ -14,6 +14,11 @@ export const appAuth = async (req, res, next) => {
     if (!app) {
       return res.status(401).json({ message: "Invalid app credentials" });
     }
+    if (!app.isEmailVerified) {
+      return res.status(403).json({
+        message: "App email is not verified",
+      });
+    }
 
     const ok = await bcrypt.compare(appSecret, app.appSecretHash);
     if (!ok) {

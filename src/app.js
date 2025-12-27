@@ -7,17 +7,16 @@ import routes from "./routes.js";
 
 const app = express();
 
+app.set("trust proxy", 1);
+
 // Core middlewares
 app.use(express.json());
 app.use(cookieParser());
 
+router.use(appAuth);
+
 // CORS (will be app-specific later)
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+router.use(appCors);
 
 // Routes
 app.use("/api", routes);

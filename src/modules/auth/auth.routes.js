@@ -5,26 +5,34 @@ import {
   refresh,
   logout,
   logoutAll,
+  verifyUserEmail,
+  resendVerification,
+  forgotPassword,
+  resetPassword
 } from "./auth.controller.js";
-import { appAuth } from "../../middlewares/app-auth.middleware.js";
 import { googleRedirect, googleCallback } from "../oauth/oauth.controller.js";
-
+import { loginLimiter, refreshLimiter } from "../../utils/rate-limit.util.js";
 
 
 const router = Router();
-
 /**
- * AUTH ROUTES
  * Base path: /api/auth
-*/
+ */
 
-router.post("/register", appAuth, register);
-router.post("/login", appAuth, login);
-router.post("/refresh", appAuth, refresh);
-router.post("/logout", appAuth, logout);
-router.post("/logout-all", appAuth, logoutAll);
+router.post("/register", register);
+router.post("/login", loginLimiter, login);
+router.post("/refresh", refreshLimiter, refresh);
+router.post("/logout", logout);
+router.post("/logout-all", logoutAll);
 
-router.get("/oauth/google", appAuth, googleRedirect);
-router.post("/oauth/google/callback", appAuth, googleCallback);
+router.get("/verify-email", verifyUserEmail);
+router.post("/resend-verification", loginLimiter, resendVerification);
+
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+
+
+router.get("/oauth/google", googleRedirect);
+router.post("/oauth/google/callback", googleCallback);
 
 export default router;

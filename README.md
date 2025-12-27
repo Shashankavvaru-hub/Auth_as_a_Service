@@ -1,10 +1,28 @@
-﻿#  Auth-as-a-Service Platform (Auth0-Lite)
+﻿# Auth-as-a-Service Platform (Auth0‑Lite) ✅
 
-A **production-grade, multi-tenant authentication platform** built with **Node.js**, **Express**, and **MongoDB**. This service focuses on secure, correct authentication, token lifecycle management, and authorization for multiple client applications (multi-tenant).
+A **multi-tenant authentication platform** built with **Node.js**, **Express**, and **MongoDB**. This service focuses on secure, correct authentication, token lifecycle management, and authorization for multiple client applications (multi-tenant).
 
 ---
 
-##  Quick summary
+## Table of Contents
+
+- [Quick summary](#quick-summary)
+- [Project structure](#project-structure)
+- [Quickstart](#quickstart)
+- [Environment variables](#environment-variables)
+- [How authentication works](#how-authentication-works)
+- [API overview (high level)](#api-overview-high-level)
+- [Database models (summary)](#database-models-summary)
+- [System architecture](#system-architecture)
+- [Security decisions](#security-decisions)
+- [Threats mitigated](#threats-mitigated)
+- [Tech stack](#tech-stack)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## Quick summary
 
 - Email/password auth (bcrypt)
 - Google OAuth (OpenID Connect)
@@ -15,7 +33,32 @@ A **production-grade, multi-tenant authentication platform** built with **Node.j
 
 ---
 
-##  Quickstart
+## 📁 Project structure
+
+A quick view of the repository layout (truncated view from the workspace):
+
+```
+src/
+├── config/
+├── middlewares/
+├── modules/
+│   ├── auth/
+│   ├── user/
+│   └── token/
+└── utils/
+```
+##  Architecture Overview
+
+This project follows a **modular, feature-based architecture**.
+
+- **config/** – Environment & database configuration  
+- **middlewares/** – Authentication, authorization, and error handling  
+- **modules/** – Feature modules (auth, user, app, token, oauth)  
+- **utils/** – Shared helper utilities  
+
+---
+
+## Quickstart
 
 Prerequisites: Node.js (16+), npm, MongoDB.
 
@@ -41,7 +84,28 @@ The API root is `/api` (e.g., `http://localhost:3000/api`).
 
 ---
 
-##  Environment variables (example `.env`)
+## 🔒 Security Decisions
+
+- Passwords hashed using bcrypt
+- Refresh tokens stored hashed (never plaintext)
+- Refresh token rotation prevents replay attacks
+- Email verification required before login
+- Rate limiting on auth endpoints
+- App-level isolation using appId + appSecret
+
+---
+
+## 🎯 What This Project Demonstrates
+
+- Deep understanding of authentication flows
+- Token lifecycle management
+- Multi-tenant system design
+- Security-first backend architecture
+- Clear separation of auth vs application logic
+
+---
+
+## Environment variables (example `.env`)
 
 Create a `.env` file with the following values:
 
@@ -59,12 +123,13 @@ GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/oauth/google/callback
 ```
 
 Notes:
+
 - Keep JWT secrets and app secrets private and rotate regularly.
 - Use HTTPS and set cookie `secure: true` in production.
 
 ---
 
-##  How authentication works
+## How authentication works
 
 - Client apps must include `x-app-id` and `x-app-secret` headers for app authentication.
 - `/api/auth/login` returns an access token (JSON) and sets a `refreshToken` cookie (HttpOnly, path `/api/auth/refresh`).
@@ -73,28 +138,31 @@ Notes:
 
 ---
 
-##  API overview (high level)
+## API overview (high level)
 
 Base: `/api`
 
 Auth endpoints:
-- `POST /api/auth/register`  body `{ email, password }` (requires app headers)
-- `POST /api/auth/login`  body `{ email, password }` (returns `accessToken` + `refreshToken` cookie)
-- `POST /api/auth/refresh`  rotates the refresh token (requires refresh cookie)
-- `POST /api/auth/logout`  revokes current refresh token and clears cookie
-- `POST /api/auth/logout-all`  revokes all user sessions (requires authenticated user)
-- `GET /api/auth/oauth/google`  redirect to Google (app headers required)
-- `POST /api/auth/oauth/google/callback`  accepts Google `idToken` and issues tokens
+
+- `POST /api/auth/register` body `{ email, password }` (requires app headers)
+- `POST /api/auth/login` body `{ email, password }` (returns `accessToken` + `refreshToken` cookie)
+- `POST /api/auth/refresh` rotates the refresh token (requires refresh cookie)
+- `POST /api/auth/logout` revokes current refresh token and clears cookie
+- `POST /api/auth/logout-all` revokes all user sessions (requires authenticated user)
+- `GET /api/auth/oauth/google` redirect to Google (app headers required)
+- `POST /api/auth/oauth/google/callback` accepts Google `idToken` and issues tokens
 
 User endpoints:
-- `GET /api/users/me`  returns user info (requires `Authorization` header)
+
+- `GET /api/users/me` returns user info (requires `Authorization` header)
 - Admin/permission-protected routes under `/api/users/admin/*` as examples
 
 ---
 
-##  Database models (summary)
+## Database models (summary)
 
 ### User
+
 ```js
 {
   email: string,
@@ -107,6 +175,7 @@ User endpoints:
 ```
 
 ### ClientApp
+
 ```js
 {
   appId: string,
@@ -119,6 +188,7 @@ User endpoints:
 ```
 
 ### RefreshToken
+
 ```js
 {
   userId: ObjectId,
@@ -130,6 +200,7 @@ User endpoints:
 ```
 
 ### AuditLog
+
 ```js
 {
   userId?: ObjectId,
@@ -143,7 +214,26 @@ User endpoints:
 
 ---
 
-##  Security decisions
+## System Architecture 🏗️
+
+This project is a **multi-tenant Auth-as-a-Service (AaaS)** platform.
+
+### Components
+
+- **Auth Service** (Node.js + Express)
+  - Handles authentication, token issuance, session management
+- **Client Applications**
+  - External apps that rely on this service for auth
+- **MongoDB**
+  - Stores users, apps, refresh tokens, audit logs
+
+### High-level flow
+
+Client App → Auth Service → MongoDB
+
+---
+
+## Security decisions
 
 - Passwords are stored hashed via `bcrypt`.
 - Refresh tokens are stored hashed; rotation and reuse detection are implemented.
@@ -152,19 +242,19 @@ User endpoints:
 - OAuth tokens are verified server-side (Google ID tokens).
 - Error messages avoid user enumeration.
 
-##  Threats mitigated
+## Threats mitigated
 
-| Threat | Mitigation |
-|---|---|
-| Refresh token theft | Rotation + reuse detection |
-| Access token theft | Short access token TTL |
-| Brute force login | Rate-limiting (configurable) |
-| Cross-app token misuse | App-scoped JWTs |
-| OAuth abuse | Server-side verification |
+| Threat                 | Mitigation                   |
+| ---------------------- | ---------------------------- |
+| Refresh token theft    | Rotation + reuse detection   |
+| Access token theft     | Short access token TTL       |
+| Brute force login      | Rate-limiting (configurable) |
+| Cross-app token misuse | App-scoped JWTs              |
+| OAuth abuse            | Server-side verification     |
 
 ---
 
-##  Tech stack
+## Tech stack
 
 - Node.js
 - Express
@@ -182,6 +272,3 @@ PRs welcome. For larger changes, open an issue first.
 
 ---
 
-## License
-
-ISC

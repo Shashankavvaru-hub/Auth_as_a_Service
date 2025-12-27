@@ -37,6 +37,12 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    emailVerificationTokenHash: String,
+    emailVerificationTokenExpiresAt: Date,
+
+    passwordResetTokenHash: String,
+    passwordResetTokenExpiresAt: Date,
+
     roles: {
       type: [String],
       default: ["user"],

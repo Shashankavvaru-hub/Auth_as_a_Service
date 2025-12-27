@@ -7,10 +7,15 @@ const requiredEnvVars = [
   "MONGO_URI",
   "JWT_ACCESS_SECRET",
   "JWT_REFRESH_SECRET",
-    // Google OAuth
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
   "GOOGLE_REDIRECT_URI",
+  "SMTP_HOST",
+  "SMTP_PORT",
+  "SMTP_USER",
+  "SMTP_PASS",
+  "EMAIL_FROM",
+  "APP_BASE_URL",
 ];
 
 requiredEnvVars.forEach((key) => {
@@ -32,10 +37,17 @@ export const env = {
 
   bcryptRounds: Number(process.env.BCRYPT_ROUNDS || 12),
 
-   google: {
+  google: {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     redirectUri: process.env.GOOGLE_REDIRECT_URI,
   },
-
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.EMAIL_FROM,
+  },
+  appBaseUrl: process.env.APP_BASE_URL,
 };
